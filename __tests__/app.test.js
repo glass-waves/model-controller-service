@@ -14,20 +14,20 @@ describe('03_separation-of-concerns-demo routes', () => {
     return setup(pool);
   });
 
-  it('creates a new order in our database and sends a text message', () => {
-    return request(app)
-      .post('/api/v1/orders')
-      .send({ quantity: 10 })
-      .then((res) => {
-        // expect(createMessage).toHaveBeenCalledTimes(1);
-        expect(res.body).toEqual({
-          id: '1',
-          quantity: 10,
-        });
-      });
-  });
+  // it('creates a new order in our database and sends a text message', () => {
+  //   return request(app)
+  //     .post('/api/v1/orders')
+  //     .send({ quantity: 10 })
+  //     .then((res) => {
+  //       // expect(createMessage).toHaveBeenCalledTimes(1);
+  //       expect(res.body).toEqual({
+  //         id: '1',
+  //         quantity: 10,
+  //       });
+  //     });
+  // });
 
-  it('ASYNC/AWAIT: creates a new order in our database and sends a text message', async () => {
+  it('creates a new order in our database and sends a text message', async () => {
     const res = await request(app)
       .post('/api/v1/orders')
       .send({ quantity: 10 });
@@ -74,5 +74,46 @@ describe('03_separation-of-concerns-demo routes', () => {
       })
   });
 
-  
+  it('updates an order', async () => {
+
+    const order = await request(app)
+      .post('/api/v1/orders')
+      .send({ quantity: 10 });
+
+    const putResult = await request(app)
+      .put(`/api/v1/orders/${order.body.id}`)
+      .send({quantity: '45'})
+      
+    const results = await request(app)
+      .get(`/api/v1/orders/${order.body.id}`)
+
+    expect(results.body).toEqual({
+      id: '1',
+      quantity: 45,
+      })
+  });
+
+  it('deletes an order', async () => {
+
+    const order1 = await request(app)
+      .post('/api/v1/orders')
+      .send({ quantity: 10 });
+
+    const order2 = await request(app)
+      .post('/api/v1/orders')
+      .send({ quantity: 13 });
+
+    const deletedOrder = await request(app)
+      .delete(`/api/v1/orders/${order1.body.id}`)
+
+    const results = await request(app)
+      .get(`/api/v1/orders`)
+
+    expect(results.body).toEqual([{
+      id: '2',
+      quantity: 13,
+      }])
+  });
+
+
 });
